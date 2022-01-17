@@ -19,7 +19,6 @@
 package com.alh.gatling.commons;
 
 import akka.actor.AbstractActor;
-import akka.actor.UntypedActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 

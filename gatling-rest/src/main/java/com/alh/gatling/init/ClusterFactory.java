@@ -41,6 +41,7 @@ import com.alh.gatling.commons.AgentConfig;
 import com.alh.gatling.commons.Constants;
 import com.alh.gatling.commons.HostUtils;
 import com.alh.gatling.commons.Master;
+import scala.compat.java8.FutureConverters;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
@@ -59,7 +60,7 @@ public class ClusterFactory {
      */
     public static ActorSystem startMaster(int port, String role, boolean isPrimary,AgentConfig agentConfig) {
         String ip = HostUtils.lookupIp();
-        String seed = String.format("akka.cluster.seed-nodes=[\"akka.tcp://%s@%s:%s\"]", Constants.PerformanceSystem, ip ,port);
+        String seed = String.format("akka.cluster.seed-nodes=[\"akka://%s@%s:%s\"]", Constants.PerformanceSystem, ip ,port);
         Config conf = ConfigFactory.parseString("akka.cluster.roles=[" + role + "]").
                 withFallback(ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port)).
                 withFallback(ConfigFactory.parseString("akka.remote.netty.tcp.hostname=" + ip)).
@@ -82,7 +83,7 @@ public class ClusterFactory {
      * @return
      */
     public static ActorRef  getMaster(int port,String role, boolean isPrimary, ActorSystem system, AgentConfig agentConfig,String ip) {
-        String journalPath = String.format("akka.tcp://%s@%s:%s/user/store", Constants.PerformanceSystem,  ip ,port);
+        String journalPath = String.format("akka://%s@%s:%s/user/store", Constants.PerformanceSystem,  ip ,port);
         startupSharedJournal(system, isPrimary, ActorPath$.MODULE$.fromString(journalPath));
         FiniteDuration workTimeout = Duration.create(120, "seconds");
         final ClusterSingletonManagerSettings settings =
@@ -111,25 +112,17 @@ public class ClusterFactory {
         Timeout timeout = new Timeout(15, TimeUnit.SECONDS);
         ActorSelection actorSelection = system.actorSelection(path);
         Future<Object> f = Patterns.ask(actorSelection, new Identify(null), timeout);
-        f.onSuccess(new OnSuccess<Object>() {
-
-            @Override
-            public void onSuccess(Object arg0) throws Throwable {
-                if (arg0 instanceof ActorIdentity && ((ActorIdentity) arg0).getRef()!=null) {
-                    SharedLeveldbJournal.setStore(((ActorIdentity) arg0).getRef(), system);
-                } else {
-                    System.err.println("Shared journal not started at " + path);
-                    System.exit(-1);
-                }
-
+        FutureConverters.toJava(f).thenAccept((arg0) -> {
+            if (arg0 instanceof ActorIdentity && ((ActorIdentity) arg0).getActorRef().isPresent()) {
+                SharedLeveldbJournal.setStore(((ActorIdentity) arg0).getActorRef().get(), system);
+            } else {
+                System.err.println("Shared journal not started at " + path);
+                System.exit(-1);
             }
-        }, system.dispatcher());
-
-        f.onFailure(new OnFailure() {
-            public void onFailure(Throwable arg0) throws Throwable {
-                System.err.println("Lookup of shared journal at " + path + " timed out");
-            }
-        }, system.dispatcher());
+        }).exceptionally( arg0 -> {
+            System.err.println("Lookup of shared journal at " + path + " timed out");
+            return null;
+        });
     }
 
 }
