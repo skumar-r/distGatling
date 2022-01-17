@@ -127,6 +127,21 @@
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-persistence_2.12</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-protobuf_2.12</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-cluster-tools_2.12</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-contrib_2.12</artifactId>
             <version>${akka.contrib.version}</version>
         </dependency>
@@ -153,11 +168,13 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.3</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/io.altoo/akka-kryo-serialization -->
         <dependency>
-            <groupId>com.github.romix.akka</groupId>
+            <groupId>io.altoo</groupId>
             <artifactId>akka-kryo-serialization_2.12</artifactId>
-            <version>0.5.2</version>
+            <version>2.3.0</version>
         </dependency>
+
 
         <dependency>
             <groupId>jakarta.xml.bind</groupId>

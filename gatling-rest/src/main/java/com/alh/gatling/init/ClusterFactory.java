@@ -29,8 +29,6 @@ import akka.actor.PoisonPill;
 import akka.actor.Props;
 import akka.cluster.singleton.ClusterSingletonManager;
 import akka.cluster.singleton.ClusterSingletonManagerSettings;
-import akka.dispatch.OnFailure;
-import akka.dispatch.OnSuccess;
 import akka.pattern.Patterns;
 import akka.persistence.journal.leveldb.SharedLeveldbJournal;
 import akka.persistence.journal.leveldb.SharedLeveldbStore;
@@ -62,8 +60,8 @@ public class ClusterFactory {
         String ip = HostUtils.lookupIp();
         String seed = String.format("akka.cluster.seed-nodes=[\"akka://%s@%s:%s\"]", Constants.PerformanceSystem, ip ,port);
         Config conf = ConfigFactory.parseString("akka.cluster.roles=[" + role + "]").
-                withFallback(ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port)).
-                withFallback(ConfigFactory.parseString("akka.remote.netty.tcp.hostname=" + ip)).
+                withFallback(ConfigFactory.parseString("akka.remote.artery.canonical.port=" + port)).
+                withFallback(ConfigFactory.parseString("akka.remote.artery.canonical.hostname=" + ip)).
                 withFallback(ConfigFactory.parseString(seed)).
                 withFallback(ConfigFactory.load("application"));
 
