@@ -34,8 +34,8 @@ public class WorkerFactory {
 
     public static ActorSystem startWorkersWithExecutors(AgentConfig agent) {
         Config conf = ConfigFactory.parseString("akka.cluster.roles=[" + agent.getActor().getRole() + "]")
-                .withFallback(ConfigFactory.parseString("akka.remote.netty.tcp.port=" + agent.getActor().getPort()))
-                .withFallback(ConfigFactory.parseString("akka.remote.netty.tcp.hostname=" + HostUtils.lookupIp()))
+                .withFallback(ConfigFactory.parseString("akka.remote.artery.canonical.port=" + agent.getActor().getPort()))
+                .withFallback(ConfigFactory.parseString("akka.remote.artery.canonical.hostname=" + HostUtils.lookupIp()))
                 .withFallback(ConfigFactory.load("application"));
 
         ActorSystem system = ActorSystem.create(Constants.PerformanceSystem, conf);
